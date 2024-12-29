@@ -1,8 +1,11 @@
 import javax.swing.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Arrays;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
+    private final static String CONN_STRING = "jdbc:mysql://localhost:3306/music";
     public static void main(String[] args) {
 
 String username = JOptionPane.showInputDialog(null, "Enter DB Username");
@@ -14,7 +17,12 @@ int okcCxl = JOptionPane.showConfirmDialog(null, pf, "Enter db password", JOptio
 final char [] password = (okcCxl == JOptionPane.OK_OPTION)? pf.getPassword() : null;
 
 
+try (Connection connection = DriverManager.getConnection(CONN_STRING, username, String.valueOf(password))) {
+    System.out.println("Successfully connection");
+    Arrays.fill(password, '\0');
+} catch (SQLException e) {
+    throw  new RuntimeException(e);
 
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
+}
     }
 }
