@@ -1,29 +1,35 @@
-import javax.swing.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import com.mysql.cj.jdbc.MysqlDataSource;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.Properties;
 
 public class Main {
-    private final static String CONN_STRING = "jdbc:mysql://localhost:3306/music";
 
     public static void main(String[] args) {
 
-        String username = JOptionPane.showInputDialog(null, "Enter DB Username");
+        Properties props = new Properties();
+        try {
+            props.load(Files.newInputStream(Path.of("music.properties"),
+                    StandardOpenOption.READ));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        var dataSource = new MysqlDataSource();
+        dataSource.setServerName(props.getProperty("serverName"));
+        dataSource.setPort(Integer.parseInt(props.getProperty("port")));
+        dataSource.setDatabaseName(props.getProperty("databaseName"));
 
-        JPasswordField pf = new JPasswordField();
+        try (var connection = dataSource.getConnection(props.getProperty("user"),
+                System.getenv("MYSQL_PASS"))
+        ) {
+            System.out.println("Success");
 
-        int okcCxl = JOptionPane.showConfirmDialog(null, pf, "Enter db password", JOptionPane.OK_CANCEL_OPTION);
-
-        final char[] password = (okcCxl == JOptionPane.OK_OPTION) ? pf.getPassword() : null;
-
-
-        try (Connection connection = DriverManager.getConnection(CONN_STRING, username, String.valueOf(password))) {
-            System.out.println("Successfully connection");
-            Arrays.fill(password, '\0');
         } catch (SQLException e) {
             throw new RuntimeException(e);
-
         }
     }
 }
